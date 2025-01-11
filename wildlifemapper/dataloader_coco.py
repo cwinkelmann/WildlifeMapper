@@ -31,7 +31,8 @@ class CocoDetection(torchvision.datasets.CocoDetection):
         self.mosaic_border = [-self.img_size // 2, -self.img_size // 2]
 
     def __getitem__(self, idx):
-        if self.mosaic == '_train':
+        if self.mosaic == '_train': # TODO why is there an underscore
+            # TODO why is this not part of the augmentations?
             img, target = self.load_mosaic(idx)
             # self.sanity_test(img, target['boxes'])
             # import pdb; pdb.set_trace()
@@ -44,10 +45,11 @@ class CocoDetection(torchvision.datasets.CocoDetection):
         if self._transforms is not None:
             #target boxes "ltrb" are normalized as cx/w,cy/h, bw/w, bh/h
             img, target = self._transforms(img, target=target)
-            # self.fliplr_test(img, target)
+            # self.fliplr_test(img, target) # TODO this is debugging code
         return {"image": img, "target": target}
     
     def fliplr_test(self, img, target):
+        # TODO: what is this code doing here??
         import pdb; pdb.set_trace()
         img = np.transpose(np.array(img), (1,2,0))*1024
         img-=img.min()
@@ -245,6 +247,7 @@ class ConvertCocoPolysToMask(object):
         keep = (boxes[:, 3] > boxes[:, 1]) & (boxes[:, 2] > boxes[:, 0])
         boxes = boxes[keep]
         classes = classes[keep]
+        # FIXME: who did the code review here?
         if self.return_masks:
             masks = masks[keep]
         if keypoints is not None:
@@ -291,7 +294,7 @@ def make_coco_transforms(image_set):
     
     raise ValueError(f'unknown {image_set}')
     
-
+# FIXME: these are DETR augmentations?
     # #scales = [480, 512, 544, 576, 608, 640, 672, 704, 736, 768, 800]
 
     # if image_set == 'train':
@@ -330,4 +333,18 @@ def build_dataset(image_set, args):
     img_folder, ann_file = PATHS[image_set]
     #dataset = CocoDetection(img_folder, ann_file, transforms=make_coco_transforms(image_set), return_masks=args.masks)
     dataset = CocoDetection(img_folder, ann_file, image_set, transforms=make_coco_transforms(image_set), return_masks=False)
+    return dataset
+
+
+def build_dataset_proper(ann_file: Path, img_folder: Path, image_set):
+    """
+    The original build_dataset function has bad code quality.
+    """
+    assert img_folder.exists(), f'provided COCO path {img_folder} does not exist'
+    assert ann_file.exists(), f'provided COCO path {ann_file} does not exist'
+
+    dataset = CocoDetection(img_folder, ann_file,
+                            image_set,
+                            transforms=make_coco_transforms(image_set),
+                            return_masks=False)
     return dataset

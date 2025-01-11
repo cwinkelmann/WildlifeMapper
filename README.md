@@ -54,11 +54,35 @@ If this research is helpful to you, please consider citing our paper:
 pip install -r requirements.txt
 ```
 
+### Download the model
+Please download the following model before running using the command below at the current location
+
+```shell
+wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_l_0b3195.pth wildlifemapper/exp/checkpoint/
+```
+
+###  Training Data Preparation
+create 1024px image patches from the original images and annotations
+```shell
+TODO this code does not exist so far
+```
+
+### Training
+```shell
+CUDA_VISIBLE_DEVICES=0 python train.py --coco_path /Users/christian/data/training_data/2024_12_16/train/crops_1024_numNone_overlap0/coco/coco_format.json --output_dir ./exp/box_model --batch_size 1 --num_workers 0 --resume ./exp/box_model/checkpoint_epoch_240.pth
+# run.sh
+```
+
+
+### Inference
+```shell
+
+```
 
 
 ## Dataset
 
-See [here](https://bisque2.ece.ucsb.edu/client_service/view?resource=https://bisque2.ece.ucsb.edu/data_service/00-TGbt6MLRm7VCn4mWmVaQsc) for an overview of the datastet. The sample dataset can be downloaded [here](https://bisque2.ece.ucsb.edu/client_service/view?resource=https://bisque2.ece.ucsb.edu/data_service/00-TGbt6MLRm7VCn4mWmVaQsc).
+See [here](https://bisque2.ece.ucsb.edu/client_service/view?resource=https://bisque2.ece.ucsb.edu/data_service/00-TGbt6MLRm7VCn4mWmVaQsc) for an overview of the dataset. The sample dataset can be downloaded [here](https://bisque2.ece.ucsb.edu/client_service/view?resource=https://bisque2.ece.ucsb.edu/data_service/00-TGbt6MLRm7VCn4mWmVaQsc).
 
 We save masks per image as a json file. It can be loaded as a dictionary in python in the below format.
 

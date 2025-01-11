@@ -6,7 +6,8 @@
 
 from .sam import Sam
 from .image_encoder import ImageEncoderViT
-from .mask_decoder_org import MaskDecoderOrg
+# FIXME, why is this code supposed to be here?
+# from .mask_decoder_org import MaskDecoderOrg
 # from .prompt_encoder import PromptEncoder
 from .pos_encoder import PromptEncoder
 from .transformer import TwoWayTransformer
