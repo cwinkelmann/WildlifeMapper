@@ -57,8 +57,19 @@ pip install -r requirements.txt
 ### Download the model
 Please download the following model before running using the command below at the current location
 
+Large Model
 ```shell
 wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_l_0b3195.pth wildlifemapper/exp/checkpoint/
+```
+
+Base Model
+```shell
+wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth wildlifemapper/exp/checkpoint/
+```
+
+Huge Model
+```shell
+wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth wildlifemapper/exp/checkpoint/
 ```
 
 ###  Training Data Preparation
