@@ -63,7 +63,7 @@ parser.add_argument("--work_dir", type=str, default="./exp/box_model")
 parser.add_argument("--trained_model", type=str, default="./exp/box_model")
 
 # train
-parser.add_argument("--num_epochs", type=int, default=550)
+parser.add_argument("--num_epochs", type=int, default=100)
 parser.add_argument("--batch_size", type=int, default=6)
 parser.add_argument("--num_workers", type=int, default=8)
 

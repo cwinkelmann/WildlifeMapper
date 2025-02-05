@@ -42,7 +42,7 @@ If this research is helpful to you, please consider citing our paper:
 ## Usage
 
 ### Requirements
-- Linux or macOS with Python >= 3.7
+- Linux or macOS with Python >= 3.7 <=3.10
 - Pytorch >= 1.7.0
 - CUDA >= 10.0
 - cudNN (compatible with CUDA)

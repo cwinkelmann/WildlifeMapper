@@ -1,3 +1,9 @@
+"""
+
+
+"""
+from pathlib import Path
+
 import numpy as np
 import matplotlib.pyplot as plt
 import os
@@ -7,11 +13,12 @@ import torch
 import cv2
 import random
 import torch.utils.data
+from loguru import logger
 from torch.utils.data import DataLoader
 import torchvision
 
 import segment_anything.utils.misc as utils
-from dataloader_coco import build_dataset
+from dataloader_coco import build_dataset, build_dataset_proper
 from segment_anything import sam_model_registry
 import segment_anything.utils.misc as utils
 from segment_anything.network import MedSAM
@@ -38,7 +45,8 @@ parser.add_argument("--threshold", type=int, default=0.5)
 
 #dataset parameters
 parser.add_argument('--dataset_file', default='coco')
-parser.add_argument('--coco_path', type=str)
+parser.add_argument('--coco_file_val', type=str)
+parser.add_argument('--coco_folder_val', type=str)
 parser.add_argument('--remove_difficult', action='store_true')
 parser.add_argument("--batch_size", type=int, default=1)
 
@@ -66,15 +74,21 @@ parser.add_argument('--eos_coef', default=0.1, type=float,
 args = parser.parse_args()
 
 device = args.device
+
+# TODO why is the train data loader used in the validation loop?
 #build dataloader
-dataset_train = build_dataset(image_set='train', args=args)
-dataset_val = build_dataset(image_set='val', args=args)
-data_loader_train = DataLoader(dataset_train, batch_size=args.batch_size, 
-                               collate_fn=utils.custom_collate, num_workers=args.num_workers)
+# dataset_train = build_dataset(image_set='train', args=args)
+
+# dataset_val = build_dataset(image_set='val', args=args)
+dataset_val = build_dataset_proper(ann_file=Path(args.coco_file_val),
+                                   img_folder=Path(args.coco_folder_val),
+                                   image_set='val')
+
+#data_loader_train = DataLoader(dataset_train, batch_size=args.batch_size,
+#                               collate_fn=utils.custom_collate, num_workers=args.num_workers)
 data_loader_val = DataLoader(dataset_val, batch_size=args.batch_size, 
                              collate_fn=utils.custom_collate, num_workers=args.num_workers)
 
-import pdb; pdb.set_trace()
 
 #bbox coordinates are provided as XYXY : left top right bottom 
 
@@ -113,8 +127,10 @@ if os.path.isfile(args.pretrain_model_path):
     ## Map model to be loaded to specified single GPU
     checkpoint = torch.load(args.pretrain_model_path, map_location=device)
     model.load_state_dict(checkpoint["model"])
+else:
+    raise ValueError(f"Model not found at {args.pretrain_model_path}")
 
-
+# TODO why is this called plot_points when it plots boxes
 def plot_points(image, labels, boxes, image_id):
     # import pdb; pdb.set_trace()
     image = np.transpose(image, (1,2,0))
@@ -124,14 +140,16 @@ def plot_points(image, labels, boxes, image_id):
     image = np.int32(image*255)
     print(image.shape, boxes.shape)
     # color = (0, 0, 255)
+    logger.info(f"Plotting boxes {len(boxes)} with labels {len(labels)}")
     for box, label in zip(boxes, labels):
         color = color_dictionary[label]
         l, t = int(box[0]), int(box[1])
         r, b = int(box[2]), int(box[3])
         image = cv2.rectangle(image, (l, t), (r, b), color, 2)
-    img_name = f"./prediction_plots/{image_id}.jpg"
-    cv2.imwrite(img_name, image)
-
+    # TODO why is this not passed from the args?
+    img_name = f"/home/cwinkelmann/work/WildlifeMapper/prediction_plots/{image_id}.jpg"
+    res = cv2.imwrite(img_name, image)
+    logger.info(f"Image saved at {img_name} with result {res}")
 
 #plot boxes and classes on the image
 for step, data in enumerate(data_loader_val):
@@ -166,4 +184,6 @@ for step, data in enumerate(data_loader_val):
     plot_points(image, labels, boxes, image_id)
 
     if step == 240:
-        break
+        # TODO what is this code? for
+        # break
+        pass
