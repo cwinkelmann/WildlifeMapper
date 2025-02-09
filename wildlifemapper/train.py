@@ -1,14 +1,19 @@
 # -*- coding: utf-8 -*-
 """
 train the image encoder and mask decoder
+run with: --device cpu --coco_file_train /Users/christian/data/training_data/2025_01_11/train/coco_crops/coco_format.json --coco_file_val /Users/christian/data/training_data/2025_01_11/val/coco_crops/coco_format.json --coco_folder_train /Users/christian/data/training_data/2025_01_11/train/crops_640_numNone_overlap0 --coco_folder_val /Users/christian/data/training_data/2025_01_11/val/crops_640_numNone_overlap0 --output_dir ./exp/box_model --use_wandb yes --batch_size 1 --num_workers 0 --resume ./exp/box_model/checkpoint_epoch_240.pth
 """
+from pathlib import Path
 
+import cv2
 # %% setup environment
 import numpy as np
 import matplotlib.pyplot as plt
 import os
 import sys
 import math
+
+from wildlifemapper.dataloader_coco import build_dataset_proper
 
 join = os.path.join
 import torch
@@ -58,7 +63,7 @@ parser.add_argument("--work_dir", type=str, default="./exp/box_model")
 parser.add_argument("--trained_model", type=str, default="./exp/box_model")
 
 # train
-parser.add_argument("--num_epochs", type=int, default=550)
+parser.add_argument("--num_epochs", type=int, default=100)
 parser.add_argument("--batch_size", type=int, default=6)
 parser.add_argument("--num_workers", type=int, default=8)
 
@@ -84,8 +89,11 @@ parser.add_argument('--eos_coef', default=0.1, type=float,
                 help="Relative classification weight of the no-object class")
 
 #dataset parameters
-parser.add_argument('--dataset_file', default='coco')
-parser.add_argument('--coco_path', type=str)
+parser.add_argument('--coco_file_train', type=str)
+parser.add_argument('--coco_file_val', type=str)
+parser.add_argument('--coco_folder_train', type=str)
+parser.add_argument('--coco_folder_val', type=str)
+
 parser.add_argument('--remove_difficult', action='store_true')
 
 parser.add_argument('--output_dir', default='', help='path where to save, empty for no saving')
@@ -98,7 +106,7 @@ parser.add_argument('--eval', action='store_true')
 parser.add_argument("--weight_decay", type=float, default=0.001, help="weight decay (default: 0.01)")
 parser.add_argument("--lr", type=float, default=0.0001, metavar="LR", help="learning rate (absolute lr)")
 parser.add_argument('--lr_drop', default=40, type=int)
-parser.add_argument("--use_wandb", type=bool, default=False, help="use wandb to monitor training")
+parser.add_argument("--use_wandb", type=bool, default=True, help="use wandb to monitor training")
 parser.add_argument("--use_amp", action="store_true", default=False, help="use amp")
 parser.add_argument("--resume", type=str, default="", help="Resuming training from checkpoint")
 
@@ -122,14 +130,20 @@ def show_box(box, ax):
         plt.Rectangle((x0, y0), w, h, edgecolor="blue", facecolor=(0, 0, 0, 0), lw=2)
     )
 
+# TODO refactor this
 # %% sanity test of dataset class
 # tr_dataset = NpyDataset("data/npy/CT_Abd")
 # tr_dataloader = DataLoader(tr_dataset, batch_size=8, shuffle=True)
-dataset_train = build_dataset(image_set='train', args=args)
-dataset_val = build_dataset(image_set='val', args=args)
-import cv2
+
+
+
+
+dataset_train = build_dataset_proper(ann_file=Path(args.coco_file_train), img_folder=Path(args.coco_folder_train), image_set='train')
+dataset_val = build_dataset_proper(ann_file=Path(args.coco_file_val), img_folder=Path(args.coco_folder_val), image_set='val')
+
+
 for step, data in enumerate(dataset_train):
-    break
+    # break
     image = np.transpose(np.asarray(data['image']), (1,2,0))
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     bboxes = data['target']['boxes']

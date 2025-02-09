@@ -123,7 +123,8 @@ class ImageEncoderViT(nn.Module):
         x = self.patch_embed(x)
         if self.pos_embed is not None:
             x = x + self.pos_embed
-        
+
+        # TODO checkout if this is the right way to handle the hfc
         x_hfc_embed = self.hfc_embed(x_hfc)
         #cross attention fron high frequencies to image features
         x_hfc = self.hfc_attn(x_hfc_embed, x)
