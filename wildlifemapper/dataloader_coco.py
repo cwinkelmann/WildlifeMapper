@@ -27,7 +27,7 @@ class CocoDetection(torchvision.datasets.CocoDetection):
         self.img_size = 1024
         self._transforms = transforms
         self.prepare = ConvertCocoPolysToMask(return_masks)
-        self.mosaic = image_set
+        self.mosaic = image_set # train, val or test
         self.mosaic_border = [-self.img_size // 2, -self.img_size // 2]
 
     def __getitem__(self, idx):
@@ -275,6 +275,7 @@ class ConvertCocoPolysToMask(object):
         return image, target
 
 #TODO : Add data augmentation later, transforms.py file from DETR
+## no augmentations are ever applied to the train set aside from flipping
 def make_coco_transforms(image_set):
 
     if image_set == 'train':
